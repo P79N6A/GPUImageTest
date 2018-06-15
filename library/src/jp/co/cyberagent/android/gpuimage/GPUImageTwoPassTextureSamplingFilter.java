@@ -32,6 +32,20 @@ public class GPUImageTwoPassTextureSamplingFilter extends GPUImageTwoPassFilter 
         initTexelOffsets();
     }
 
+    protected void initWeights(int size, float[] weights){
+        GPUImageFilter filter = mFilters.get(0);
+        int sampleSizeLoc = GLES20.glGetUniformLocation(filter.getProgram(), "sampleSize");
+        int weightsLoc = GLES20.glGetUniformLocation(filter.getProgram(), "weight");
+        filter.setInteger(sampleSizeLoc, size);
+        filter.setFloatArray(weightsLoc, weights);
+
+        filter = mFilters.get(1);
+        sampleSizeLoc = GLES20.glGetUniformLocation(filter.getProgram(), "sampleSize");
+        weightsLoc = GLES20.glGetUniformLocation(filter.getProgram(), "weight");
+        filter.setInteger(sampleSizeLoc, size);
+        filter.setFloatArray(weightsLoc, weights);
+    }
+
     protected void initTexelOffsets() {
         float ratio = getHorizontalTexelOffsetRatio();
         GPUImageFilter filter = mFilters.get(0);

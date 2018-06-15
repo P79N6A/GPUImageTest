@@ -23,83 +23,80 @@ import android.util.Log;
  *
  * scaling: for the size of the applied blur, default of 1.0
  */
-public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter {
+public class GPUImageStandardBlurFilter extends GPUImageTwoPassTextureSamplingFilter {
     private static final String VERTEX_SHADER =
+            "precision highp float;\n" +
             "attribute vec4 position;\n" +
-            "attribute vec4 inputTextureCoordinate;\n" +
-             "varying vec2 textureCoordinate;\n" +
-            " \n" +
-            "const int MAX_VERTICAL_SAMPLES = 15;\n" +
-            "uniform float texelWidthOffset;\n" +
-            "uniform float texelHeightOffset;\n" +
-            "uniform float stepOffset[MAX_VERTICAL_SAMPLES]; \n" +
-            "uniform int sampleSize;\n" +
-
-            "varying vec2 blurCoordinates[MAX_VERTICAL_SAMPLES];\n" +
-            "varying float passSampleSize;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    gl_Position = position;\n" +
-            "    textureCoordinate = inputTextureCoordinate.xy;\n" +
-            "    vec2 singleStepOffset = vec2(texelWidthOffset, texelHeightOffset);\n" +
-            "    blurCoordinates[0] = inputTextureCoordinate.xy;" +
-            "    passSampleSize = float(sampleSize);" +
-            "    for (int i = 0; i < sampleSize; i++) {\n" +
-            "        int first = i * 2 + 1;\n" +
-            "        int second = i * 2 + 2;\n" +
-            "        blurCoordinates[first] = inputTextureCoordinate.xy + singleStepOffset * stepOffset[i];\n" +
-            "        blurCoordinates[second] = inputTextureCoordinate.xy - singleStepOffset * stepOffset[i];\n" +
-            "    }\n" +
-            "}";
+                    "attribute vec4 inputTextureCoordinate;\n" +
+                    "varying vec2 textureCoordinate;\n" +
+                    "varying vec2 singleStepOffset;\n" +
+                    " \n" +
+                    "uniform float texelWidthOffset;\n" +
+                    "uniform float texelHeightOffset;\n" +
+                    "\n" +
+                    "uniform int sampleSize;\n" +
+                    "const int MAX_VERTICAL_SAMPLES = 21;\n" +
+                    "varying vec2 blurCoordinates[21];\n" +
+                    "varying vec2 test;\n" +
+                    "\n" +
+                    "void main()\n" +
+                    "{\n" +
+                    "    gl_Position = position;\n" +
+                    "    textureCoordinate = inputTextureCoordinate.xy;\n" +
+                    "    int multiplier = 0;\n" +
+                    "    int minSample = 0;\n" +
+                    "    if(sampleSize > MAX_VERTICAL_SAMPLES){\n" +
+                    "        minSample = MAX_VERTICAL_SAMPLES;\n" +
+                    "    }else{\n" +
+                    "         minSample = sampleSize;\n" +
+                    "    }\n" +
+                    "    vec2 blurStep;\n" +
+                    "    test.x = 0.0;\n" +
+                    "    test.y = float((sampleSize - 1) / 2);\n" +
+                    "    singleStepOffset = vec2(texelWidthOffset, texelHeightOffset);\n" +
+                    "    for (int i = 0; i < minSample; i++) {\n" +
+                    "        multiplier = (i - ((minSample - 1) / 2));\n" +
+                    "        blurStep = float(multiplier) * singleStepOffset;\n" +
+                    "        blurCoordinates[i] = inputTextureCoordinate.xy + blurStep;\n" +
+                    "    }\n" +
+                    "}";
 
     private static final String FRAGMENT_SHADER =
             "precision highp float;\n" +
-            "uniform sampler2D inputImageTexture;\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "const int GAUSSIAN_WEIGHT_NUMBERS = 21;\n" +
-            "const int MAX_VERTICAL_SAMPLES = 15;\n" +
-            "uniform float texelWidthOffset;\n" +
-            "uniform float texelHeightOffset;\n" +
-            "varying float passSampleSize;\n" +
-            "uniform int optimizeSampleSize;\n" +
-            "\n" +
-            "uniform float standardGaussianWeights[GAUSSIAN_WEIGHT_NUMBERS]; \n" +
-            "varying vec2 blurCoordinates[MAX_VERTICAL_SAMPLES];\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    vec4 sum = vec4(0.0);\n" +
-            "    vec4 fragColor=texture2D(inputImageTexture,textureCoordinate);\n" +
-            "    sum += texture2D(inputImageTexture, blurCoordinates[0]) * standardGaussianWeights[0]; " +
-            "    int sample = int(passSampleSize);\n" +
-            "    for (int i = 0; i < sample; i++) {\n" +
-            "        int first = i * 2 + 1;\n" +
-            "        int second = i * 2 + 2;\n" +
-            "        float firstWeight = standardGaussianWeights[first];\n" +
-            "        float secondWeight = standardGaussianWeights[second];\n" +" " +
-            "        float optimizedWeight = firstWeight + secondWeight;\n" +
-            "        sum += texture2D(inputImageTexture, blurCoordinates[first]) * optimizedWeight;\n" +
-            "        sum += texture2D(inputImageTexture, blurCoordinates[second]) * optimizedWeight;\n" +
-            "    }\n" +
-            "    vec2 singleStepOffset = vec2(texelWidthOffset, texelHeightOffset);\n" +
-            "    if (optimizeSampleSize > sample)\n" +
-            "    {\n" +
-            "       for (int j = sample; j < optimizeSampleSize; j++) {\n" +
-            "           float firstWeight = standardGaussianWeights[j * 2 + 1];\n" +
-            "           float secondWeight = standardGaussianWeights[j * 2 + 2];\n" +
-            "            \n" +
-            "           float optimizedWeight = firstWeight + secondWeight;\n" +
-            "           float optimizedOffset = (firstWeight * float(j * 2 + 1) + secondWeight * float(j * 2 + 2)) / optimizedWeight;\n" +
-            "           sum += texture2D(inputImageTexture, blurCoordinates[0] + singleStepOffset * optimizedOffset) * optimizedWeight;\n" +
-            "           sum += texture2D(inputImageTexture, blurCoordinates[0] - singleStepOffset * optimizedOffset) * optimizedWeight;\n" +
-            "       }\n" +
-            "    }\n" +
-            "    gl_FragColor = sum;" +
+                    "uniform sampler2D inputImageTexture;\n" +
+                    "varying  vec2 textureCoordinate;\n" +
+                    "varying  vec2 singleStepOffset;\n" +
+                    "const int GAUSSIAN_WEIGHT_NUMBERS = 41;\n" +
+                    "\n" +
+                    "uniform int sampleSize;\n" +
+                    "uniform float weight[GAUSSIAN_WEIGHT_NUMBERS]; \n" +
+                    "varying vec2 blurCoordinates[21];\n" +
+                    "varying vec2 test;\n" +
+                    "\n" +
+                    "void main()\n" +
+                    "{\n" +
+                    "    vec3 sum = vec3(0.0);\n" +
+                    "    vec4 fragColor=texture2D(inputImageTexture,textureCoordinate);\n" +
+                    "\n" +
+                    "    sum += texture2D(inputImageTexture, textureCoordinate.xy).rgb * weight[0];\n" +
+                    "\n" +
+                    "    int  medium = GAUSSIAN_WEIGHT_NUMBERS - 1;\n" +
+                    "    int minSample = int(test.y);\n" +
+                    "    if(minSample > medium){\n" +
+                    "        minSample = medium;\n" +
+                    "    }\n" +
+                    "    for (int i = 1; i <= minSample; i++) {\n" +
+                    "        vec2 blurCoordinate1 = textureCoordinate.xy + singleStepOffset*float(i);\n" +
+                    "        vec2 blurCoordinate2 = textureCoordinate.xy - singleStepOffset*float(i);\n" +
+                    "        sum += texture2D(inputImageTexture, blurCoordinate1).rgb * weight[i];\n" +
+                    "        sum += texture2D(inputImageTexture, blurCoordinate2).rgb * weight[i];\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    gl_FragColor = vec4(sum,fragColor.a);\n" +
 //            "    gl_FragColor = texture2D(inputImageTexture,textureCoordinate);\n" +
-            "}";
+                    "}";
 
-
+    //fragment计算统一用float,特别是除法
     private float blurSize = 1f;
     private float sigma = 2.0f;
     private float[] mStandardGaussianWeights;
@@ -107,28 +104,30 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
     private int mSampleSize;
     private int mOptSampleSize;
 
+    private float[] mWeights;
+
     /**
      * Construct new BoxBlurFilter with default blur size of 1.0.
      */
-    public GPUImageTestBlurFilter() {
+    public GPUImageStandardBlurFilter() {
         this(1f);
     }
 
 
-    public GPUImageTestBlurFilter(float blurSize) {
+    public GPUImageStandardBlurFilter(float blurSize) {
         super(VERTEX_SHADER, FRAGMENT_SHADER, VERTEX_SHADER, FRAGMENT_SHADER);
         this.blurSize = blurSize;
-        Log.i("jerrypxiao", "VERTEX_SHADER = " + VERTEX_SHADER);
-        Log.i("jerrypxiao", "FRAGMENT_SHADER = " + FRAGMENT_SHADER);
+        //Log.i("jerrypxiao", "VERTEX_SHADER = " + VERTEX_SHADER);
+        //Log.i("jerrypxiao", "FRAGMENT_SHADER = " + FRAGMENT_SHADER);
     }
 
     @Override
     public void onInit() {
         super.onInit();
-        setOffsetAndWeights(9.8f);
-
-        initStepAndWeight(mStepOffset, mStandardGaussianWeights);
-        initSampleSize(mSampleSize, mOptSampleSize);
+        getWeight(9.8f);
+        initWeights(mSampleSize, mWeights);
+        //initStepAndWeight(mStepOffset, mStandardGaussianWeights);
+        //initSampleSize(mSampleSize, mOptSampleSize);
     }
 
     /**
@@ -138,13 +137,24 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
      */
     public void setBlurSize(final float blurValue) {
 
-        runOnDraw(new Runnable() {
+        /*runOnDraw(new Runnable() {
             @Override
             public void run() {
                 setOffsetAndWeights(blurValue);
                 Log.e("jerrypxiao", " setBlurSize mSampleSize = " + mSampleSize + ", mOptSampleSize=" + mOptSampleSize);
                 initStepAndWeight(mStepOffset, mStandardGaussianWeights);
                 initSampleSize(mSampleSize, mOptSampleSize);
+            }
+        });*/
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                getWeight(blurValue);
+                Log.e("jerrypxiao", " setBlurSize mSampleSize = " + mSampleSize + ", mWeights.length =" + mWeights.length);
+                for(int i =0; i< mWeights.length; i++){
+                    Log.e("jerrypxiao", "weight = ["+ i +"]" + mWeights[i]);
+                }
+                initWeights(mSampleSize, mWeights);
             }
         });
     }
@@ -172,9 +182,12 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
         float[] standardGaussianWeights = new float[blurRadius + 1];
         float sumOfWeights = 0.0F;
 
+
+        Log.e("jerrypxiao", "getWeight blurRadius = " + blurRadius +", sigma =" + sigma);
         int numberOfOptimizedOffsets;
         for (numberOfOptimizedOffsets = 0; numberOfOptimizedOffsets < blurRadius + 1; ++numberOfOptimizedOffsets) {
             standardGaussianWeights[numberOfOptimizedOffsets] = (float) (1.0D / Math.sqrt(6.283185307179586D * Math.pow((double) sigma, 2.0D)) * Math.exp(-Math.pow((double) numberOfOptimizedOffsets, 2.0D) / (2.0D * Math.pow((double) sigma, 2.0D))));
+            //Log.e("jerrypxiao", "getWeight Standadweight = ["+ numberOfOptimizedOffsets +"] =" + standardGaussianWeights[numberOfOptimizedOffsets]);
             if (numberOfOptimizedOffsets == 0) {
                 sumOfWeights += standardGaussianWeights[numberOfOptimizedOffsets];
             } else {
@@ -184,6 +197,7 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
 
         for (numberOfOptimizedOffsets = 0; numberOfOptimizedOffsets < blurRadius + 1; ++numberOfOptimizedOffsets) {
             standardGaussianWeights[numberOfOptimizedOffsets] /= sumOfWeights;
+            Log.e("jerrypxiao", "getWeight Standadweight = ["+ numberOfOptimizedOffsets +"] =" + standardGaussianWeights[numberOfOptimizedOffsets]);
         }
 
         numberOfOptimizedOffsets = Math.min(blurRadius / 2 + blurRadius % 2, 7);
@@ -203,8 +217,8 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
         float secondWeight;
         float optimizedWeight;
         int offsetIndex;
-        float[] weight = new float[GAUSSIAN_WEIGHT_SAMPLES];
-        for (int i = 0; i < GAUSSIAN_WEIGHT_SAMPLES; i++) {
+        float[] weight = new float[blurRadius + 1];
+        for (int i = 0; i < blurRadius + 1; i++) {
             weight[i] = 0.0f;
         }
         for (offsetIndex = 0; offsetIndex < numberOfOptimizedOffsets; ++offsetIndex) {
@@ -231,6 +245,10 @@ public class GPUImageTestBlurFilter extends GPUImageTwoPassTextureSamplingFilter
         for (int i = 0; i < weight.length; i++) {
             weight[i] /= sum;
         }
+
+        mWeights = weight;
+        mSampleSize = blurRadius + 1;
+        Log.e("jerrypxiao", "getWeight mSampleSize = " + mSampleSize);
         return weight;
     }
 

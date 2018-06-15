@@ -23,10 +23,88 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.opengl.Matrix;
 
-import jp.co.cyberagent.android.gpuimage.*;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import jp.co.cyberagent.android.gpuimage.GPUImage3x3ConvolutionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImage3x3TextureSamplingFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageAddBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageAlphaBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageBilateralFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageBoxBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageBulgeDistortionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageCGAColorspaceFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageChromaKeyBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorBalanceFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorBurnBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorDodgeBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageColorInvertFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageCrosshatchFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDarkenBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDifferenceBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDilationFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDirectionalSobelEdgeDetectionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDissolveBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageDivideBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageEmbossFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageExclusionBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageExposureFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFalseColorFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+import jp.co.cyberagent.android.gpuimage.GPUImageGammaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGaussianBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGaussianSelecterBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGlassSphereFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageGrayscaleFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHalftoneFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHardLightBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHazeFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHighlightShadowFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHueBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHueFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageKuwaharaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLaplacianFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLevelsFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLightenBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLinearBurnBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLuminosityBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageMonochromeFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageMultiplyBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageNonMaximumSuppressionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageNormalBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageOpacityFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageOverlayBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImagePixelationFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImagePosterizeFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageRGBDilationFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageRGBFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSaturationBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSaturationFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageScreenBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSketchFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSmoothToonFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSobelEdgeDetection;
+import jp.co.cyberagent.android.gpuimage.GPUImageSoftLightBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSourceOverBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSphereRefractionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageStandardBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSubtractBlendFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSwirlFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageTestBlurFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageToneCurveFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageToonFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageTransformFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageTwoInputFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageVignetteFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageWeakPixelInclusionFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageWhiteBalanceFilter;
 
 public class GPUImageFilterTools {
     public static void showDialog(final Context context,
@@ -34,6 +112,7 @@ public class GPUImageFilterTools {
         final FilterList filters = new FilterList();
         filters.addFilter("GAUSSIAN_SELECTER_BLUR", FilterType.GAUSSIAN_SELECTER_BLUR);
         filters.addFilter("TEST_BLUR", FilterType.TEST_BLUR);
+        filters.addFilter("STANDARD_BLUR", FilterType.STANDARD_BLUR);
         filters.addFilter("Contrast", FilterType.CONTRAST);
         filters.addFilter("Invert", FilterType.INVERT);
         filters.addFilter("Pixelation", FilterType.PIXELATION);
@@ -135,6 +214,8 @@ public class GPUImageFilterTools {
                 return new GPUImageGaussianSelecterBlurFilter();
             case TEST_BLUR:
                 return new GPUImageTestBlurFilter();
+            case STANDARD_BLUR:
+                return new GPUImageStandardBlurFilter();
             case CONTRAST:
                 return new GPUImageContrastFilter(2.0f);
             case GAMMA:
@@ -331,7 +412,7 @@ public class GPUImageFilterTools {
     }
 
     private enum FilterType {
-        GAUSSIAN_SELECTER_BLUR,TEST_BLUR,CONTRAST, GRAYSCALE, SHARPEN, SEPIA, SOBEL_EDGE_DETECTION, THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS, POSTERIZE, GAMMA, BRIGHTNESS, INVERT, HUE, PIXELATION,
+        GAUSSIAN_SELECTER_BLUR,TEST_BLUR, STANDARD_BLUR, CONTRAST, GRAYSCALE, SHARPEN, SEPIA, SOBEL_EDGE_DETECTION, THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS, POSTERIZE, GAMMA, BRIGHTNESS, INVERT, HUE, PIXELATION,
         SATURATION, EXPOSURE, HIGHLIGHT_SHADOW, MONOCHROME, OPACITY, RGB, WHITE_BALANCE, VIGNETTE, TONE_CURVE, BLEND_COLOR_BURN, BLEND_COLOR_DODGE, BLEND_DARKEN, BLEND_DIFFERENCE,
         BLEND_DISSOLVE, BLEND_EXCLUSION, BLEND_SOURCE_OVER, BLEND_HARD_LIGHT, BLEND_LIGHTEN, BLEND_ADD, BLEND_DIVIDE, BLEND_MULTIPLY, BLEND_OVERLAY, BLEND_SCREEN, BLEND_ALPHA,
         BLEND_COLOR, BLEND_HUE, BLEND_SATURATION, BLEND_LUMINOSITY, BLEND_LINEAR_BURN, BLEND_SOFT_LIGHT, BLEND_SUBTRACT, BLEND_CHROMA_KEY, BLEND_NORMAL, LOOKUP_AMATORKA,
@@ -421,6 +502,8 @@ public class GPUImageFilterTools {
                 adjuster = new BoxBlurBlurAdjuster().filter(filter);
             } else if (filter instanceof GPUImageTestBlurFilter) {
                 adjuster = new TestBlurBlurAdjuster().filter(filter);
+            } else if (filter instanceof GPUImageStandardBlurFilter) {
+                adjuster = new StandardBlurBlurAdjuster().filter(filter);
             }
             else {
 
@@ -635,6 +718,14 @@ public class GPUImageFilterTools {
 
         //jerrypxiao
         private class TestBlurBlurAdjuster extends Adjuster<GPUImageTestBlurFilter> {
+            @Override
+            public void adjust(final int percentage) {
+                getFilter().setBlurSize(range(percentage, 1.0f, 24.0f));
+                //getFilter().setBlurSize(range(percentage, 0.0f, 8f));
+            }
+        }
+
+        private class StandardBlurBlurAdjuster extends Adjuster<GPUImageStandardBlurFilter> {
             @Override
             public void adjust(final int percentage) {
                 getFilter().setBlurSize(range(percentage, 1.0f, 24.0f));

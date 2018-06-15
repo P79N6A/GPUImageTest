@@ -17,7 +17,6 @@
 package jp.co.cyberagent.android.gpuimage;
 
 import android.graphics.PointF;
-import android.opengl.GLES20;
 
 /**
  * A more generalized 9x9 Gaussian blur filter
@@ -83,6 +82,7 @@ public class GPUImageGaussianSelecterBlurFilter extends GPUImageTwoPassTextureSa
                     "}\n";
 
     public static final String FRAGMENT_SHADER =
+            "precision highp float;\n" +
             "uniform sampler2D inputImageTexture;\n" +
                     "\n" +
                     "const lowp int GAUSSIAN_SAMPLES = 9;\n" +
@@ -113,7 +113,7 @@ public class GPUImageGaussianSelecterBlurFilter extends GPUImageTwoPassTextureSa
                     "       sum += texture2D(inputImageTexture, blurCoordinates[7]).rgb * 0.09;\n" +
                     "       sum += texture2D(inputImageTexture, blurCoordinates[8]).rgb * 0.05;\n" +
                             "\n" +
-                    "	    //gl_FragColor = vec4(sum,fragColor.a);\n" +
+                    //"	    //gl_FragColor = vec4(sum,fragColor.a);\n" +
                     "     vec4 blurredImageColor = vec4(sum,fragColor.a);\n" +
                     "     \n" +
                     "     gl_FragColor = mix(fragColor, blurredImageColor, smoothstep(radius , 0.5, dist));" +
