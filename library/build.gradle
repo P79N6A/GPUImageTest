@@ -1,9 +1,9 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
+//apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION as int
-    buildToolsVersion BUILD_TOOLS_VERSION
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion MIN_SDK_VERSION as int
@@ -33,8 +33,6 @@ android {
             assets.srcDirs = ['assets']
             jni.srcDirs = ['jni']
         }
-
-        instrumentTest.setRoot('tests')
     }
 
     lintOptions {
@@ -62,11 +60,11 @@ artifacts {
     archives androidJavadocsJar
 }
 
-publish {
-    userOrg = POM_DEVELOPER_ID
-    groupId = GROUP
-    artifactId = ARTIFACT_ID
-    publishVersion = VERSION_NAME
-    desc = POM_DESCRIPTION
-    website = POM_URL
-}
+//publish {
+//    userOrg = POM_DEVELOPER_ID
+//    groupId = GROUP
+//    artifactId = ARTIFACT_ID
+//    publishVersion = VERSION_NAME
+//    desc = POM_DESCRIPTION
+//    website = POM_URL
+//}

@@ -63,7 +63,9 @@ public class ActivityMain extends Activity implements OnClickListener {
             case R.id.button_camera:
                 startActivity(new Intent(this, ActivityCamera.class));
                 break;
-
+            case R.id.button_transition:
+                startActivity(new Intent(this, TransitionActivity.class));
+                break;
             default:
                 break;
         }
